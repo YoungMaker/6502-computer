@@ -1,5 +1,5 @@
 ; 2020 Aaron Walsh
-; Alternating bits on PORTA of the 65C22
+; Alternating bits on PORTB of the 65C22
 
 ; 65C22 address locations
 ; memory map:
