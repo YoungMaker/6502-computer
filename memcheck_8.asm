@@ -27,11 +27,16 @@ RAM_END_H    = $3F
 RAM_END_L    = $FF
   ; RAM segment end
 
-RAM_NAK = %00000001
+RAM_WRITING = %00000001
+  ; output signal on PORTB indicating RAM is writing
+RAM_VERIFY  = %00000010
+  ; output signal on PORTB indicating RAM is reading back and comparing
+RAM_NACK    = %10000000
   ; output signal on PORTB indicating RAM did not verify
-RAM_ACK = %00000010
-  ; output signal on PORTB indicating RAM did verify. 
-
+  ; begin code
+RAM_ACK    = %00000100
+  ; output signal on PORTB indicating RAM did verify
+  
   ; begin code
   .org $8000
   
@@ -39,10 +44,79 @@ reset:
   lda #$FF
   sta DDRB
     ; set all PORTB pins to output
-  lda #RAM_NAK
+  lda #RAM_WRITING
   sta PORTB
     ; put NACK on PORTB until memcheck completed 
+  jsr setup
+  
+write:
+  inx
+    ; increase the x register by 1
+  txa 
+    ; move the value to the accumulator
+  cmp $01
+  beq verify
+    ; compare the threshold to the loop variable
+    ; if we're done quit
+  iny 
+    ; increase the Y register by one
+    ; can't use accumulator b/c INA isn't supported
+  sty STACK_END_H, X
+    ; store the y value at STACK_END + X
+
+  jmp write
+    ; loop
+
+verify:
+  ; will jump here if we're done writing to ram
+  ; verify the bits were written as required
+  lda #RAM_VERIFY
+  sta PORTB
+  
+  jsr setup
+  inx
+    ; increase the x register by 1
+  txa 
+    ; move the value to the accumulator
+  cmp $01
+  beq verify_ack
+    ; compare the threshold to the loop variable
+    ; if we're done quit
+  iny 
+    ; increase the Y register by one
+    ; can't use accumulator b/c INA isn't supported
+  tya 
+    ; transfer x register to accumulator
+  cmp STACK_END_H, X
+    ; compare the value of x
+  bne verify_nak
+    ; if they didn't verify, set NAK LED and quit
+
+  jmp verify
+
+verify_ack:
+  lda #RAM_ACK
+  sta PORTB
+    ; store ACK onto PORTB
+  jmp dead
+    ;quit
+ 
+verify_nak:
+    ; will jump here if we're done writing to ram
+  lda #RAM_NACK
+  sta PORTB
+    ; store NACK onto PORTB
     
+  jmp dead
+    ;quit
+  
+dead:
+  nop
+  jmp dead
+  ; loop forever
+  
+setup:
+  ; loop setup subroutine
   ldx #$00
     ; put the low bits of the pointer into X
   ldy #$00
@@ -52,31 +126,8 @@ reset:
   lda #$FF
   sta $01
     ; store the threshold constant on ram addr 01 (zero page mode)
-  
-loop:
-  inx
-    ; increase the x register by 1
-  txa 
-    ; move the value to the accumulator
-  cmp $01
-  beq done
-    ; compare the threshold to the loop variable
-    ; if we're done quit
-  iny 
-    ; increase the Y register by one
-    ; can't use accumulator b/c INA isn't supported
-  sty STACK_END_H, X
-    ; store the y value at STACK_END + X
-
-  jmp loop
-    ; loop
-  
-done:
-    ; will jump here if we're done writing to ram
-  lda #RAM_ACK
-  sta PORTB
-    ; store ACK onto PORTB
-  
+  rts
+    
   .org $fffc
   .word reset
   .word $0000
