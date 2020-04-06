@@ -1,8 +1,9 @@
 ; 2020 Aaron Walsh
-; Performs a write loop onto RAM in the 6502
+; Performs a couter-write loop onto RAM in the 6502
 ; only does an 8 bit section, didn't want to mess with
 ; trying to do 16 bit operations yet. 
-; will in the future read it back to verify it
+; reads it back and compares each bit to the counter 
+; Indicates if the bytes matched or not.
 
 ; memory map:
 ; $0000 - $3FFF - 16kb SRAM location
