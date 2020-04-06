@@ -74,6 +74,7 @@ verify:
   sta PORTB
   
   jsr setup
+verify_loop:
   inx
     ; increase the x register by 1
   txa 
@@ -92,7 +93,7 @@ verify:
   bne verify_nak
     ; if they didn't verify, set NAK LED and quit
 
-  jmp verify
+  jmp verify_loop
 
 verify_ack:
   lda #RAM_ACK
