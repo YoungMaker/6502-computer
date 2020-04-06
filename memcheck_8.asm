@@ -48,12 +48,20 @@ reset:
   ldy #$00
     ; setup the Y with 0 to start with (a=0)
     ; since we're using original 6502 assm we can't use inx
+   
+  lda #$FF
+  sta $01
+    ; store the threshold constant on ram addr 01 (zero page mode)
   
 loop:
   inx
-    ;increment pointer lower byte
-  bcs done
-    ; if we overflowed we set 255 bytes and we're done
+    ; increase the x register by 1
+  txa 
+    ; move the value to the accumulator
+  cmp $01
+  beq done
+    ; compare the threshold to the loop variable
+    ; if we're done quit
   iny 
     ; increase the Y register by one
     ; can't use accumulator b/c INA isn't supported
