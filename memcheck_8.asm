@@ -21,7 +21,7 @@ RAM_START   = $00
 STACK_START_H = $01
 STACK_START_L = $00
   ; stack segment start
-STACK_END   = $0200
+STACK_END_H   = $02
   ; stack segment end
 RAM_END_H    = $3F
 RAM_END_L    = $FF
@@ -43,8 +43,8 @@ reset:
   sta PORTB
     ; put NACK on PORTB until memcheck completed 
     
-  ldx #STACK_END_L
-    ; put the high bits of the pointer into X
+  ldx #$00
+    ; put the low bits of the pointer into X
   ldy #$00
     ; setup the Y with 0 to start with (a=0)
     ; since we're using original 6502 assm we can't use inx
@@ -57,14 +57,15 @@ loop:
   iny 
     ; increase the Y register by one
     ; can't use accumulator b/c INA isn't supported
-  sty STACK_END,X
-    ; store the value at X
+  sty STACK_END_H, X
+    ; store the y value at STACK_END + X
+
   jmp loop
     ; loop
   
 done:
     ; will jump here if we're done writing to ram
-  lda #$RAM_ACK
+  lda #RAM_ACK
   sta PORTB
     ; store ACK onto PORTB
   
