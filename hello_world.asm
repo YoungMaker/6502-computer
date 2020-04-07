@@ -30,6 +30,10 @@ E  = %10000000
   .org $8000
 
 reset:
+  ldx #$FF
+  txs
+    ; reset the stack to FF 
+    
 	lda #%11111111
 	sta DDRB
 		; set all pins of PORTB to output
@@ -114,10 +118,16 @@ lcd_putchar:
   lda #(RS | E)
   sta PORTA
   
+  nop ; very simple delay tactic
+  nop
+  nop 
+  nop
+  
   lda #RS
 	sta PORTA
     ; strobe enable pin and return RS to 1
     ; completes CGRAM write
+  jsr wait_for_busy
   rts
   
 lcd_instruction:
@@ -131,9 +141,62 @@ lcd_instruction:
   lda #E
   sta PORTA
   
+  nop ; very simple delay tactic
+  nop
+  nop 
+  nop
+  
   lda #0
 	sta PORTA
     ; strobe enable pin 
+  jsr wait_for_busy
+  rts
+
+; TODO in the future make this an interrupt based
+; queue scheme such that when you write to the LCD
+; you write to an internal command queue that is flushed
+; when a busy-free interrupt is called  
+wait_for_busy:
+  lda #%01111111
+	sta DDRB
+		; set PORTA7 to input to read
+    ; as we're gonna read the busy flag
+   
+  lda #RW
+  sta PORTA
+    ; store the RW = 1 bit, allowing us to read the busy flag
+
+wait_for_loop:
+  
+  lda #(RW | E)
+  sta PORTA
+    ; set enable pin high and set RW = 1 
+    
+  nop ; very simple delay tactic  
+  nop
+  nop 
+  nop
+  
+  lda PORTB
+    ; read PORTB
+  and #%10000000
+    ; check to see if the 8th bit is set high
+  beq lcd_free
+    ; branch if it is not set high
+  
+  lda #RW
+  sta PORTA
+    ; set enable pin low
+  jmp wait_for_loop
+  
+lcd_free:
+  lda #0
+  sta PORTA
+    ; clear RW/E/RS bits
+  
+  lda #%11111111
+	sta DDRB
+		; reset all pins of PORTB to output
   rts
   
   .org $fffc
