@@ -26,6 +26,16 @@ RW = %01000000
 E  = %10000000
 ; E  - Enable -> PORTA7
 
+ROM_TABLE = $05
+  ; start of the ROM indexing table
+  ; we will place various pointers to
+  ; ROM data there 
+  ; so we can use the indexing applications
+
+STR_LOC = $ff01
+
+  .org $ff01
+  .string "HELLO WORLD"
   ; begin code
   .org $8000
 
@@ -71,43 +81,59 @@ setup_lcd:
     ; I/D = 1 for increment left-to right
     ;   S = 0 for no scrolling
   
-  ; messy way to print "HELLO WORLD
-  ; TODO: use null terminated string in RAM somewhere
-  ; develop function that will putchar until 0 is detected
-  lda #"H"
-  jsr lcd_putchar
-  lda #"E"
-  jsr lcd_putchar
-  lda #"L"
-  jsr lcd_putchar
-  lda #"L"
-  jsr lcd_putchar
-  lda #"O"
-  jsr lcd_putchar
-  lda #" "
-  jsr lcd_putchar
-  lda #"W"
-  jsr lcd_putchar
-  lda #"O"
-  jsr lcd_putchar
-  lda #"R"
-  jsr lcd_putchar
-  lda #"L"
-  jsr lcd_putchar
-  lda #"D"
-  jsr lcd_putchar
-  lda #"!"
-  jsr lcd_putchar
+  lda #<STR_LOC
+  sta ROM_TABLE
+    ; store the low bytes of STR_LOC in the ROM table
+    ; at index 0 (IE 0)
+  lda #>STR_LOC
+  sta ROM_TABLE+1
+    ; store the high bytes of STR_LOC in the ROM table
+    ; at index 1 (IE $06)
   
+  ldx #0
+    ; clear the rom table index to 0
+    ; indicating we would like to 
+    ; print a string located in the table at index 0 and index 1
+  jsr lcd_printstr
   
 loop:
-  nop 
-  nop
-  jsr loop
-    ; infinite empty loop
+  wai
+    ; use the WDC65C02 wai instruction
+    ; which will halt the CPU and wait for an interrupt
 
+; puts a null terminated string onto the LCD display
+; at the current cursor location
+; Blocks until the LCD driver has completed the 
+; CGRAM write operation
+; WARNING: max string length is limited to 254 chars
+; as this is an 8 bit operation
+; parameters: 
+; X register contains ROM table index of pointer low byte
+; which will be follwed by high byte of the string pointer
+; in ROM
+; returns: N/A
+lcd_printstr:
+  lda (ROM_TABLE,X)
+    ; load the char at the value of the x register + the ROM table
+  beq lcd_prinstr_done
+    ; if its a null value, quit. 
+  
+  jsr lcd_putchar
+    ; print the char to the LCD screen
+  
+  
+lcd_printstr_done:
+  ; TODO any other things?
+  rts
+
+; puts a single char onto the LCD display
+; at the current cursor location.
+; Blocks until the LCD driver has completed the 
+; CGRAM write operation
+; parameters:
+; accumulator: contains valid ASCII char
+; returns: N/A
 lcd_putchar:
-  ; accumulator used as parameter location
   sta PORTB
   lda #RS
   sta PORTA
