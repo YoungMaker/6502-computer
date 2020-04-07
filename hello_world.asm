@@ -26,6 +26,9 @@ RW = %01000000
 E  = %10000000
 ; E  - Enable -> PORTA7
 
+  ; begin code
+  .org $8000
+
 reset:
 	lda #%11111111
 	sta DDRB
@@ -37,6 +40,10 @@ reset:
 
 setup_lcd:
 	; setup the LCD for character output
+	lda #%00000001
+	jsr lcd_instruction
+	; clear display and set DDRAM addres 0
+	
 	lda #%00111000
 	jsr lcd_instruction
 		; stores FUNCTION SET command (001)
@@ -111,7 +118,8 @@ lcd_putchar:
 	sta PORTA
     ; strobe enable pin and return RS to 1
     ; completes CGRAM write
- 
+  rts
+  
 lcd_instruction:
   sta PORTB
     ; store instruction from A at PORTB
@@ -126,7 +134,8 @@ lcd_instruction:
   lda #0
 	sta PORTA
     ; strobe enable pin 
-	
+  rts
+  
   .org $fffc
   .word reset
   .word $0000
