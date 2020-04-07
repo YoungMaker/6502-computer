@@ -28,45 +28,104 @@ E  = %10000000
 
 reset:
 	lda #%11111111
-	sta #DDRB
+	sta DDRB
 		; set all pins of PORTB to output
 	lda #%11100000
-	sta #DDRA
+	sta DDRA
 		; set the top 3 pins of PORTA to output
 
 
 setup_lcd:
 	; setup the LCD for character output
 	lda #%00111000
-	sta #PORTB
+	jsr lcd_instruction
 		; stores FUNCTION SET command (001)
 		; DL = 1 for 8 bit mode
 		; N = 1 for two line display
 		; F = 0 for 5x8 character font mode
 	
-	lda #E
-	sta #PORTA
-	
 	lda #$00
-	sta #PORTA
-		; strobe the Enable pin to latch the command
+	jsr lcd_instruction
 		
 	lda #%00001100
-	sta #PORTB
+	jsr lcd_instruction
 		; stores DISPLAY ON command (00001)
 		; D = 1 for display on
 		; C = 0 for cursor off
 		; B = 0 for blink off
 	
+  lda #%00000110
+  jsr lcd_instruction
+    ; stores ENTRY MODE command (000001)
+    ; I/D = 1 for increment left-to right
+    ;   S = 0 for no scrolling
+  
+  ; messy way to print "HELLO WORLD
+  ; TODO: use null terminated string in RAM somewhere
+  ; develop function that will putchar until 0 is detected
+  lda #"H"
+  jsr lcd_putchar
+  lda #"E"
+  jsr lcd_putchar
+  lda #"L"
+  jsr lcd_putchar
+  lda #"L"
+  jsr lcd_putchar
+  lda #"O"
+  jsr lcd_putchar
+  lda #" "
+  jsr lcd_putchar
+  lda #"W"
+  jsr lcd_putchar
+  lda #"O"
+  jsr lcd_putchar
+  lda #"R"
+  jsr lcd_putchar
+  lda #"L"
+  jsr lcd_putchar
+  lda #"D"
+  jsr lcd_putchar
+  lda #"!"
+  jsr lcd_putchar
+  
+  
 loop:
-	; write HELLO WORLD to LCD
-	    
+  nop 
+  nop
+  jsr loop
+    ; infinite empty loop
 
+ ; TODO: fix thse so that we can run at 1Mhz, wait for busy flag. 
+lcd_putchar:
+  ; accumulator used as parameter location
+  sta PORTB
+  lda #RS
+	sta PORTA
+    ; set RS to 1 to write to CGRAM
+    ; set 
+    
+  lda #(RS | E)
+  sta PORTA
+  
+  lda #RS
+	sta PORTA
+    ; strobe enable pin and return RS to 1
+    ; completes CGRAM write
+ 
 lcd_instruction:
-	sta PORTB
-	; store instruction at PORTB
-	lda #$00
-	sta
+  sta PORTB
+    ; store instruction from A at PORTB
+    ; accumulator used as parameter location
+	lda #0
+	sta PORTA
+    ; clear RS/RW/E pins
+    
+  lda #E
+  sta PORTA
+  
+  lda #0
+	sta PORTA
+    ; strobe enable pin 
 	
   .org $fffc
   .word reset
