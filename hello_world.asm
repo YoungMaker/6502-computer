@@ -34,37 +34,37 @@ reset:
   txs
     ; reset the stack to FF 
     
-	lda #%11111111
-	sta DDRB
-		; set all pins of PORTB to output
-	lda #%11100000
-	sta DDRA
-		; set the top 3 pins of PORTA to output
+  lda #%11111111
+  sta DDRB
+    ; set all pins of PORTB to output
+  lda #%11100000
+  sta DDRA
+    ; set the top 3 pins of PORTA to output
 
 
 setup_lcd:
-	; setup the LCD for character output
-	lda #%00000001
-	jsr lcd_instruction
-	; clear display and set DDRAM addres 0
-	
-	lda #%00111000
-	jsr lcd_instruction
-		; stores FUNCTION SET command (001)
-		; DL = 1 for 8 bit mode
-		; N = 1 for two line display
-		; F = 0 for 5x8 character font mode
-	
-	lda #$00
-	jsr lcd_instruction
-		
-	lda #%00001100
-	jsr lcd_instruction
-		; stores DISPLAY ON command (00001)
-		; D = 1 for display on
-		; C = 0 for cursor off
-		; B = 0 for blink off
-	
+  ; setup the LCD for character output
+  lda #%00000001
+  jsr lcd_instruction
+  ; clear display and set DDRAM addres 0
+  
+  lda #%00111000
+  jsr lcd_instruction
+    ; stores FUNCTION SET command (001)
+    ; DL = 1 for 8 bit mode
+    ; N = 1 for two line display
+    ; F = 0 for 5x8 character font mode
+  
+  lda #$00
+  jsr lcd_instruction
+    
+  lda #%00001100
+  jsr lcd_instruction
+    ; stores DISPLAY ON command (00001)
+    ; D = 1 for display on
+    ; C = 0 for cursor off
+    ; B = 0 for blink off
+  
   lda #%00000110
   jsr lcd_instruction
     ; stores ENTRY MODE command (000001)
@@ -111,7 +111,7 @@ lcd_putchar:
   ; accumulator used as parameter location
   sta PORTB
   lda #RS
-	sta PORTA
+  sta PORTA
     ; set RS to 1 to write to CGRAM
     ; set 
     
@@ -124,7 +124,7 @@ lcd_putchar:
   nop
   
   lda #RS
-	sta PORTA
+  sta PORTA
     ; strobe enable pin and return RS to 1
     ; completes CGRAM write
   jsr wait_for_busy
@@ -134,8 +134,8 @@ lcd_instruction:
   sta PORTB
     ; store instruction from A at PORTB
     ; accumulator used as parameter location
-	lda #0
-	sta PORTA
+  lda #0
+  sta PORTA
     ; clear RS/RW/E pins
     
   lda #E
@@ -147,7 +147,7 @@ lcd_instruction:
   nop
   
   lda #0
-	sta PORTA
+  sta PORTA
     ; strobe enable pin 
   jsr wait_for_busy
   rts
@@ -158,8 +158,8 @@ lcd_instruction:
 ; when a busy-free interrupt is called  
 wait_for_busy:
   lda #%01111111
-	sta DDRB
-		; set PORTA7 to input to read
+  sta DDRB
+    ; set PORTA7 to input to read
     ; as we're gonna read the busy flag
    
   lda #RW
@@ -195,8 +195,8 @@ lcd_free:
     ; clear RW/E/RS bits
   
   lda #%11111111
-	sta DDRB
-		; reset all pins of PORTB to output
+  sta DDRB
+    ; reset all pins of PORTB to output
   rts
   
   .org $fffc
