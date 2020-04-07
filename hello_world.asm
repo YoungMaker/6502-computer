@@ -106,7 +106,6 @@ loop:
   jsr loop
     ; infinite empty loop
 
- ; TODO: fix thse so that we can run at 1Mhz, wait for busy flag. 
 lcd_putchar:
   ; accumulator used as parameter location
   sta PORTB
@@ -128,6 +127,7 @@ lcd_putchar:
     ; strobe enable pin and return RS to 1
     ; completes CGRAM write
   jsr wait_for_busy
+    ; wait until the LCD is ready for a new instruction or DRAM write
   rts
   
 lcd_instruction:
@@ -150,6 +150,7 @@ lcd_instruction:
   sta PORTA
     ; strobe enable pin 
   jsr wait_for_busy
+    ; wait until the LCD is ready for a new instruction or DRAM write
   rts
 
 ; TODO in the future make this an interrupt based
