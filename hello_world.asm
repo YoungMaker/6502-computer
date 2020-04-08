@@ -28,11 +28,11 @@ E  = %10000000
 
 STR_LOC = $ff00
 ; pointer to string
-STR_LOC_2 = $ff20
+STR2_LOC= $ff20
 
   .org STR_LOC
   .string "HELLO WORLD!"
-  .org STR_LOC_2
+  .org STR2_LOC
   .string "lorem ipsum dol"
   ; begin code
   .org $8000
@@ -88,7 +88,23 @@ setup_lcd:
     ; store the high bytes of STR_LOC in the ROM table
     ; at index 1 (IE $06)
   jsr lcd_printstr
-    ; print the string on line 10000000
+    ; print the string on the 1st line
+
+  lda #$40
+  jsr lcd_set_DDRAM
+    ; move the DDRAM address to the start of the next line
+  
+  lda #<STR2_LOC
+  sta $F0
+    ; store lower bytes of string pointer 
+    ; in 0th zero page argument memory
+
+  lda #>STR2_LOC
+  sta $F1
+    ; store the high bytes of STR_LOC in the ROM table
+    ; at index 1 (IE $06)
+  jsr lcd_printstr
+    ; print the string on the 2nd line now
 
   
 loop:
@@ -133,7 +149,7 @@ lcd_printstr_done:
 ; Puts a single char onto the LCD display
 ; at the current cursor location.
 ; Blocks until the LCD driver has completed the 
-; CGRAM write operation
+; DDRAM write operation
 ; parameters:
 ; accumulator: contains valid ASCII char
 ; returns: N/A
@@ -158,6 +174,21 @@ lcd_putchar:
     ; completes CGRAM write
   jsr wait_for_busy
     ; wait until the LCD is ready for a new instruction or DRAM write
+  rts
+
+; Sets the DDRAM location which will move the cursor location
+; to the location specified at that CGRAM address
+; parameters:
+; WARNING: only the bottom 6 bits of the specified CGRAM 
+; address will be set, the top two bits will be ignored
+; accumulator - set to the appropriate CGRAM address
+lcd_set_DDRAM:
+  and #%01111111
+    ; and the accumulator such that we ingore the top bit and set it to zero
+  ora #%10000000
+    ; or the bits such that the 8th bit is always set on 
+  jsr lcd_instruction
+    ; send the DDRAM instruction to the LCD
   rts
 
 ; Uploads an LCD instruction into the instruction
