@@ -30,7 +30,7 @@ STR_LOC = $ff01
 ; pointer to string
 
   .org STR_LOC
-  .string "HELLO WORLD"
+  .string "HELLO WORLD!    lorem ipusm dolor,"
   ; begin code
   .org $8000
 
@@ -53,11 +53,11 @@ setup_lcd:
   jsr lcd_instruction
   ; clear display and set DDRAM addres 0
   
-  lda #%00111000
+  lda #%00110000
   jsr lcd_instruction
     ; stores FUNCTION SET command (001)
     ; DL = 1 for 8 bit mode
-    ; N = 1 for two line display
+    ; N = 0 for two line display
     ; F = 0 for 5x8 character font mode
   
   lda #$00
