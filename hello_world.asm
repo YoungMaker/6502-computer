@@ -26,11 +26,14 @@ RW = %01000000
 E  = %10000000
 ; E  - Enable -> PORTA7
 
-STR_LOC = $ff01
+STR_LOC = $ff00
 ; pointer to string
+STR_LOC_2 = $ff20
 
   .org STR_LOC
-  .string "HELLO WORLD!    lorem ipusm dolor,"
+  .string "HELLO WORLD!"
+  .org STR_LOC_2
+  .string "lorem ipsum dol"
   ; begin code
   .org $8000
 
@@ -60,15 +63,12 @@ setup_lcd:
     ; N = 0 for two line display
     ; F = 0 for 5x8 character font mode
   
-  lda #$00
-  jsr lcd_instruction
-    
-  lda #%00001100
+  lda #%00001111
   jsr lcd_instruction
     ; stores DISPLAY ON command (00001)
     ; D = 1 for display on
-    ; C = 0 for cursor off
-    ; B = 0 for blink off
+    ; C = 1 for cursor off
+    ; B = 1 for blink off
   
   lda #%00000110
   jsr lcd_instruction
@@ -88,7 +88,8 @@ setup_lcd:
     ; store the high bytes of STR_LOC in the ROM table
     ; at index 1 (IE $06)
   jsr lcd_printstr
-    ; print the string
+    ; print the string on line 10000000
+
   
 loop:
   wai
@@ -100,7 +101,8 @@ loop:
 ; Blocks until the LCD driver has completed the 
 ; CGRAM write operation
 ; WARNING: max string length is limited to 254 chars
-; as this is an 8 bit operation
+; as this is an 8 bit operation. Will cleanly exit if 
+; wraparound is to occur
 ; parameters: 
 ; $F0 - $F1 string address (L, H)
 ; in ROM
@@ -117,10 +119,10 @@ lcd_prinstr_loop:
   jsr lcd_putchar
   iny
   tya
-  cmp #$21
+  cmp #$FF
   beq lcd_printstr_done
-    ; if we're expected to exceed the LCD's display
-    ; quit
+    ; if we're expected to exceed a page worth
+    ; quit to prevent wraparound
   jmp lcd_prinstr_loop
   
 lcd_printstr_done:
