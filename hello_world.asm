@@ -56,11 +56,11 @@ setup_lcd:
   jsr lcd_instruction
   ; clear display and set DDRAM addres 0
   
-  lda #%00110000
+  lda #%00111000
   jsr lcd_instruction
     ; stores FUNCTION SET command (001)
     ; DL = 1 for 8 bit mode
-    ; N = 0 for two line display
+    ; N = 1 for two line display
     ; F = 0 for 5x8 character font mode
   
   lda #%00001111
@@ -105,7 +105,6 @@ setup_lcd:
     ; at index 1 (IE $06)
   jsr lcd_printstr
     ; print the string on the 2nd line now
-
   
 loop:
   wai
