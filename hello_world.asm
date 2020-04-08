@@ -26,15 +26,10 @@ RW = %01000000
 E  = %10000000
 ; E  - Enable -> PORTA7
 
-ROM_TABLE = $05
-  ; start of the ROM indexing table
-  ; we will place various pointers to
-  ; ROM data there 
-  ; so we can use the indexing applications
-
 STR_LOC = $ff01
+; pointer to string
 
-  .org $ff01
+  .org STR_LOC
   .string "HELLO WORLD"
   ; begin code
   .org $8000
@@ -81,52 +76,59 @@ setup_lcd:
     ; I/D = 1 for increment left-to right
     ;   S = 0 for no scrolling
   
+  ; complex subroutines will from now on 
+  ; use F0-FF as argument memory
   lda #<STR_LOC
-  sta ROM_TABLE
-    ; store the low bytes of STR_LOC in the ROM table
-    ; at index 0 (IE 0)
+  sta $F0
+    ; store lower bytes of string pointer 
+    ; in 0th zero page argument memory
+
   lda #>STR_LOC
-  sta ROM_TABLE+1
+  sta $F1
     ; store the high bytes of STR_LOC in the ROM table
     ; at index 1 (IE $06)
-  
-  ldx #0
-    ; clear the rom table index to 0
-    ; indicating we would like to 
-    ; print a string located in the table at index 0 and index 1
   jsr lcd_printstr
+    ; print the string
   
 loop:
   wai
     ; use the WDC65C02 wai instruction
     ; which will halt the CPU and wait for an interrupt
 
-; puts a null terminated string onto the LCD display
+; Puts a null terminated string onto the LCD display
 ; at the current cursor location
 ; Blocks until the LCD driver has completed the 
 ; CGRAM write operation
 ; WARNING: max string length is limited to 254 chars
 ; as this is an 8 bit operation
 ; parameters: 
-; X register contains ROM table index of pointer low byte
-; which will be follwed by high byte of the string pointer
+; $F0 - $F1 string address (L, H)
 ; in ROM
-; returns: N/A
+; returns: A contains length of string written
 lcd_printstr:
-  lda (ROM_TABLE,X)
-    ; load the char at the value of the x register + the ROM table
-  beq lcd_prinstr_done
-    ; if its a null value, quit. 
-  
+  ldy #0
+    ; clear the index register
+lcd_prinstr_loop:
+  lda ($F0), y 
+    ; load A register with value indexed by $F0 low byte and $F1 high byte
+    ; then adds y to index the proper character in the string
+  beq lcd_printstr_done
+    ; quit if nullchar detected
   jsr lcd_putchar
-    ; print the char to the LCD screen
-  
+  iny
+  tya
+  cmp #$21
+  beq lcd_printstr_done
+    ; if we're expected to exceed the LCD's display
+    ; quit
+  jmp lcd_prinstr_loop
   
 lcd_printstr_done:
-  ; TODO any other things?
+  txa
+    ; puts the length in the accumulator if requried for use
   rts
 
-; puts a single char onto the LCD display
+; Puts a single char onto the LCD display
 ; at the current cursor location.
 ; Blocks until the LCD driver has completed the 
 ; CGRAM write operation
@@ -155,7 +157,14 @@ lcd_putchar:
   jsr wait_for_busy
     ; wait until the LCD is ready for a new instruction or DRAM write
   rts
-  
+
+; Uploads an LCD instruction into the instruction
+; RAM on the LCD driver module
+; Blocks until the LCD driver has completed
+; executing the instruction 
+; parameters:
+; accumulator: contains valid LCD commmand (8 bits)
+; returns N/A
 lcd_instruction:
   sta PORTB
     ; store instruction from A at PORTB
