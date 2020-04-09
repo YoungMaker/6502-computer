@@ -2,7 +2,7 @@
 ; Uses the timer T1
 ; of the WDC65C22 unit
 ; as a constant source of interrupts
-; at an even amount of timer
+; at an even amount of time
 ; the clk is 1Mhz so each count of T1 is 
 ; exactly 1us
 
@@ -51,7 +51,7 @@ reset:
     ; store the LED bits 
     ; in OF. LED starts on
   
-  lda #%01000000
+  lda #%11000000
   sta IER
     ; set the 6th bit of the IER
     ; to enable the T1 interrupt
@@ -87,11 +87,18 @@ loop:
 ; the Interrupt vector will jump to here
 ; when servicing an IRQB interrupt
 isr:
+  pha
+  phx
+  bit T1L
+    ; read the low bits of the counter
+    ; so that we clear the interrupt flag
   lda $0F
   eor #%0000001
     ; exclusive or, flip bit 0 stored in A
   sta $0F
     ; load and flip bit 7 at $0F, store
+  plx
+  pla 
   rti
   
   .org $fffe
