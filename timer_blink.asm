@@ -29,24 +29,24 @@ T1H   = $6005
   ; T1 counter register
   ; upon filling of T1H
   ; the 
-IRQB = $FFFE
+IRQB = $fffe
 
   ; begin code
   .org $8000
 
 reset:
-   ldx #$FF
+  ldx #$FF
   txs
     ; reset the stack to FF 
     
   lda #%11111111
   sta DDRB
     ; set all pins of PORTB to output
-  lda #%11100000
+  lda #%00000001
   sta DDRA
-    ; set the top 3 pins of PORTA to output
+    ; set the top pin on PORTA to output
 
-  lda #%10000000
+  lda #%00000001
   sta $0F
     ; store the LED bits 
     ; in OF. LED starts on
@@ -88,16 +88,15 @@ loop:
 ; when servicing an IRQB interrupt
 isr:
   lda $0F
-  eor #%10000000
-    ; exclusive or, flip bit 7 stored in A
+  eor #%0000001
+    ; exclusive or, flip bit 0 stored in A
   sta $0F
     ; load and flip bit 7 at $0F, store
   rti
   
-  .org IRQB
+  .org $fffe
   .word isr
     ; IRQB vector
   .org $fffc
   .word reset
-  .word $0000
     ;reset vector
