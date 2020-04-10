@@ -102,7 +102,7 @@ isr:
   lda $0F
   eor #%0000001
     ; exclusive or, flip bit 0 stored in A
-  sta PORTA
+  sta $0F
     ; load and flip bit 7 at $0F, store
   plx
   pla 
