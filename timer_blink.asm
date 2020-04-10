@@ -65,6 +65,13 @@ reset:
     ; 4-2 shift register disabled
     ; 0-1 PB/PA input latching disabled
   
+  cli
+    ; clear the interrupt disabled bit
+    ; when the 6502 powers up, it will power
+    ; up with this bit set to 1
+    ; in order to respond to ISRs 
+    ; we clear this bit
+  
   lda #$FF
   sta T1L
   sta T1H
@@ -95,7 +102,7 @@ isr:
   lda $0F
   eor #%0000001
     ; exclusive or, flip bit 0 stored in A
-  sta $0F
+  sta PORTA
     ; load and flip bit 7 at $0F, store
   plx
   pla 
