@@ -44,3 +44,76 @@ T2C_H = $6009
   ; T2 counter register
   ; upon filling of T2C_H
   ; the T2 counter begins counting down
+
+
+; Sets the appropriate IER bit 
+; so that T1 flags a hardware interrupt
+; when the T1 count reaches zero
+; NOTE: call set_t1_free or set_t1_oneshot
+; to set the counter and begin the countdown
+; Parameters: if $F0 contains 0 IER for T1 will be turned off, otherwise turned on
+; Returns: N/A
+set_t1_ier:
+  pha
+  lda $F0
+  beq off
+on:
+  lda IER
+  eor %11000000
+    ; load whatever the status of the IER is and set the top two bits high
+  sta IER
+  pla
+  rts
+off:
+  lda IER
+  and #%10111111
+    ; load whatever the status of the IER is and set the 6th bit low 
+    ; setting the 7th bit low disables all interrupts
+  sta IER
+    ; set the 6th bit of the IER to disable the T1 interrupt
+  pla
+  rts
+
+; Sets the appropriate IER bit 
+; so that T2 flags a hardware interrupt
+; when the T2 count reaches zero
+; NOTE: call set_t2_oneshot
+; to set the counter and begin the countdown
+; Parameters: N/A
+; Returns: N/A
+set_t2_ier
+  pha
+  lda IER
+  eor %10100000
+    ; load whatever the status of the IER is and set the top bit and the 6th bit high
+  sta IER
+    ; set the IER accordingly
+    ; T2 interrupt will now be enabled 
+  pla
+  rts
+
+; Sets timer 1 on the VIA to free-run mode
+; sets the appropriate AUX register mode for free run mode on T1
+; with no PORTB07 square wave out
+; this will latch the argument contents into the 
+; counter and begin the countdown immediately after rts
+; Parameters $F0-$F1 contain L and H bits to be set in the counter
+; Returns: N/A
+set_t1_free:
+  pha
+  lda AUX
+  eor #%01000000
+    ; set bit 6 on the AUX register to 1
+  and #%01111111
+    ; set bit 7 on the AUX register to 0
+  sta AUX
+    ; 6-7 T1 to free run, no PORTB07 toggle
+  
+  lda $F0 
+  sta T1C_L
+  lda $F1 
+  sta T1C_H 
+    ; stores low then high bits in the T1 counter register
+    ; this immeditately begins the countdown of T1
+  pla
+  rts

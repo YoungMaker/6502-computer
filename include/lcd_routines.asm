@@ -38,6 +38,9 @@ SECOND_LINE_E = $50
 ; PORTB and the top 3 pins of PORTA so it is ready for 
 ; outputting characters
 ; parameters: N/A
+; NOTE: modifies DDR and blocks 4x the HD44780 wait time for the BF
+; so this function is relatively expensive, at least 200us probably
+; @1Mhz
 setup_lcd:
   pha
   
@@ -77,8 +80,7 @@ setup_lcd:
 
 ; Puts a null terminated string onto the LCD display
 ; at the current cursor location
-; Blocks until the LCD driver has completed the 
-; CGRAM write operation
+
 ; WARNING: max string length is limited to 254 chars
 ; as this is an 8 bit operation. Will cleanly exit if 
 ; wraparound is to occur
@@ -86,6 +88,9 @@ setup_lcd:
 ; $F0 - $F1 string address (L, H)
 ; in ROM
 ; returns: $E0 contains length of string written
+; NOTE:Blocks until the LCD driver has completed the 
+; CGRAM write operation, about 50 us * length of the string
+; average 800us for all 16 characters
 lcd_printstr:
   pha
   phy
@@ -152,7 +157,7 @@ lcd_putchar:
 ; WARNING: only the bottom 6 bits of the specified DDRAM 
 ; address will be set, the top two bits will be ignored
 ; returns: N/A
-lcd_set_DDRAM:
+lcd_set_ddram:
   lda $F0
   and #%01111111
     ; load the DDRAM addres from the parameter matrix index 0
@@ -167,7 +172,7 @@ lcd_set_DDRAM:
 ; determine the current cusor location
 ; Parameters: N/A
 ; Returns: $E0 contains DDRAM address lower 7 bits 
-lcd_read_DDRAM_addr:
+lcd_read_ddram_addr:
   pha
   lda #%000000000
   sta DDRB
