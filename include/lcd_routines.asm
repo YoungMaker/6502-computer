@@ -9,11 +9,8 @@
 ; $8000 - $FFFF - AT28C256 ROM location
 ; $FFFC - $FFFD - initialization vector
 
-; setup WDC65C22 memory mapping
-PORTA = $6001
-PORTB = $6000
-DDRB  = $6002
-DDRA  = $6003
+  .include "include/via_routines.asm"
+    ; include VIA symbols and routines
 
 ; LCD connnections
 ; D0 - D7: Data bus -> PORB0-PORTB7
@@ -33,7 +30,8 @@ SECOND_LINE_S = $40
 SECOND_LINE_E = $50
 ; and ends at DDRAM address $50 (inclusive)
 
-  .org $F100
+
+  ;.org $F100
     ; put this in the ROM at address F100, leaving 3,824 bytes before the reset vector
 
 ; Sets up and initialize the LCD connected to 
@@ -190,7 +188,7 @@ lcd_read_DDRAM_addr:
   nop 
   nop
   
-  lda $PORTB
+  lda PORTB
   and #%01111111
     ; read the DDRAM address and the BF, then and the accumulator 
     ; such that we ingore the BF and set it to zero. 
