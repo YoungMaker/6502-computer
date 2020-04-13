@@ -4,11 +4,12 @@
 ; attached to PORTB and part of PORTA 
 ; on the 65C22
 
-STR_LOC = $ff00
-; pointer to string
-STR2_LOC= $ff20
+STR_LOC  = $3000
+; pointer to string 
+; (MUST BE MUTIBLE and have at least 8 bytes)
+; so it can't be in ROM dummy
+STR2_LOC = $fe20
 
-  .org STR_LOC
   .org STR2_LOC
   .string "lorem ipsum dol"
   ; begin code
@@ -36,7 +37,7 @@ reset:
   lda #>STR_LOC
   sta $F3
     
-  jsr ebt_ascii
+  ;jsr ebt_ascii
     ; convert binary into ASCII binary string at STR_LOC
   
   lda #<STR_LOC
@@ -47,6 +48,16 @@ reset:
   jsr lcd_printstr
     ; print the output string onto the LCD screen
     
+  lda #$40
+  sta $F0
+  jsr lcd_set_ddram
+  
+  lda #<STR2_LOC
+  sta $F0
+  lda #>STR2_LOC
+  sta $F1
+  jsr lcd_printstr
+  
 loop:
   wai
   

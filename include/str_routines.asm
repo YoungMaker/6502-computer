@@ -11,6 +11,8 @@
 ; $F2-F3 output address
 ; Returns: ASCII binary string at address
 ; specified in $F2-$F3
+; WARNING: must be 8 bytes availabe starting at the address
+; specified in $F2-F3
 ebt_ascii:
   pha
   phy
@@ -21,13 +23,9 @@ ebt_ascii:
     ; load the input value at $F0-$F1 into the A register
   
 ebta_loop:
-  tya
-    ; move counter to accumulator
-  cmp #$09
-  bcs ebta_quit
-    ; if the loop iterator reached 9 or higher, quit. We've tested alll bits
-  txa
-    ; transfer input value (shifted left y times) back into A
+  beq ebta_quit
+    ; if all bits are zero then we've reached the end conditon
+    ; FIXME: doesn't work if the input data is also all zeros
   bit #$01
     ; and the accumulator with 01 to see if the last bit is on
   bne cmp_1 
@@ -61,6 +59,9 @@ cmp_1:
     ; so we can test the next bit
   jmp ebta_loop
 ebta_quit:
+  lda $00
+  sta ($F2), y
+    ; add null terminator to string
   plx
   ply
   pla
