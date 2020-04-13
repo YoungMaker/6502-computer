@@ -56,15 +56,15 @@ T2C_H = $6009
 set_t1_ier:
   pha
   lda $F0
-  beq off
-on:
+  beq t1_off
+t1_on:
   lda IER
-  eor %11000000
+  eor #%11000000
     ; load whatever the status of the IER is and set the top two bits high
   sta IER
   pla
   rts
-off:
+t1_off:
   lda IER
   and #%10111111
     ; load whatever the status of the IER is and set the 6th bit low 
@@ -79,13 +79,25 @@ off:
 ; when the T2 count reaches zero
 ; NOTE: call set_t2_oneshot
 ; to set the counter and begin the countdown
-; Parameters: N/A
+; Parameters: if $F0 contains 0 IER for T1 will be turned off, otherwise turned on
 ; Returns: N/A
 set_t2_ier
   pha
+  lda $F0
+  beq t2_off
+t2_on:
   lda IER
-  eor %10100000
+  eor #%10100000
     ; load whatever the status of the IER is and set the top bit and the 6th bit high
+  sta IER
+    ; set the IER accordingly
+    ; T2 interrupt will now be enabled 
+  pla
+  rts
+t2_off:
+  lda IER
+  and #%11011111
+    ; load whatever the status of the IER is and set the 6th bit low
   sta IER
     ; set the IER accordingly
     ; T2 interrupt will now be enabled 

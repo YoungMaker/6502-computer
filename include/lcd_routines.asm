@@ -38,7 +38,7 @@ SECOND_LINE_E = $50
 ; PORTB and the top 3 pins of PORTA so it is ready for 
 ; outputting characters
 ; parameters: N/A
-; NOTE: modifies DDR and blocks 4x the HD44780 wait time for the BF
+; NOTE: modifies DDRs and blocks 4x the HD44780 wait time for the BF
 ; so this function is relatively expensive, at least 200us probably
 ; @1Mhz
 setup_lcd:
@@ -91,6 +91,7 @@ setup_lcd:
 ; NOTE:Blocks until the LCD driver has completed the 
 ; CGRAM write operation, about 50 us * length of the string
 ; average 800us for all 16 characters
+; @1Mhz
 lcd_printstr:
   pha
   phy
