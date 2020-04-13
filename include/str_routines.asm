@@ -21,17 +21,24 @@ ebt_ascii:
     ; setup loop index
   lda ($F0), y
     ; load the input value at $F0-$F1 into the A register
-  
+    
+  ;lda #%11111010
 ebta_loop:
+  tax 
+  tya
+  cmp #$08
   beq ebta_quit
-    ; if all bits are zero then we've reached the end conditon
-    ; FIXME: doesn't work if the input data is also all zeros
-  bit #$01
+  txa
+    ; copy value in X to A, move the counter to A
+    ; compare counter against 9, quit if equal
+    ; transfer X back into A if not.
+  bit #%00000001
     ; and the accumulator with 01 to see if the last bit is on
-  bne cmp_1 
-cmp_0:
+  beq cmp_0
+    ; if the zero flag is set, put a zero in the ascii string
+cmp_1:
   tax
-  lda #"0"
+  lda #"1"
   sta ($F2), y
   txa
     ; move input in A to X
@@ -44,9 +51,9 @@ cmp_0:
     ; move the bits over by one to the right
     ; so we can test the next bit
   jmp ebta_loop
-cmp_1:
+cmp_0:
   tax
-  lda #"1"
+  lda #"0"
   sta ($F2), y
   txa
     ; move input in A to X
@@ -59,7 +66,8 @@ cmp_1:
     ; so we can test the next bit
   jmp ebta_loop
 ebta_quit:
-  lda $00
+  iny
+  lda #0
   sta ($F2), y
     ; add null terminator to string
   plx

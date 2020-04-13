@@ -58,7 +58,7 @@ set_t1_ier:
   lda $F0
   beq t1_off
 t1_on:
-  lda IER
+  lda #0
   eor #%11000000
     ; load whatever the status of the IER is and set the top two bits high
   sta IER
@@ -113,6 +113,7 @@ t2_off:
 ; Returns: N/A
 set_t1_free:
   pha
+  ;lda #%01000000
   lda AUX
   eor #%01000000
     ; set bit 6 on the AUX register to 1

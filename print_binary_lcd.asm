@@ -4,7 +4,8 @@
 ; attached to PORTB and part of PORTA 
 ; on the 65C22
 
-STR_LOC  = $3000
+TEMP_VAR = $000F
+STR_LOC  = $2000
 ; pointer to string 
 ; (MUST BE MUTIBLE and have at least 8 bytes)
 ; so it can't be in ROM dummy
@@ -21,14 +22,14 @@ reset:
   jsr setup_lcd 
     ; setup LCD on PORTA and PORTB
     
-  lda #%10101010
-  sta $0F
-    ; store alternating bits in $0F, our temporary input variable
+  lda #$FE
+  sta TEMP_VAR
+    ; value in $0F, our temporary input variable
 
-  lda #$0F
+  lda #<TEMP_VAR
   sta $F0
  
-  lda #$00
+  lda #>TEMP_VAR
   sta $F1
     ; store address of binary data ($0F) into $F0 and $F1
   
@@ -37,7 +38,7 @@ reset:
   lda #>STR_LOC
   sta $F3
     
-  ;jsr ebt_ascii
+  jsr ebt_ascii
     ; convert binary into ASCII binary string at STR_LOC
   
   lda #<STR_LOC
