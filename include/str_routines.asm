@@ -21,13 +21,11 @@ ebt_ascii:
     ; load the input value at $F0-$F1 into the A register
   
 ebta_loop:
-  tax
-    ; transfer input value (shifted left y times) into X for storage
   tya
     ; move counter to accumulator
-  cmp $09
-  beq ebta_quit
-    ; if the loop iterator reached 9, quit. We've tested alll bits
+  cmp #$09
+  bcs ebta_quit
+    ; if the loop iterator reached 9 or higher, quit. We've tested alll bits
   txa
     ; transfer input value (shifted left y times) back into A
   bit #$01
