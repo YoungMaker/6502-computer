@@ -23,10 +23,11 @@ reset:
   lda #%10101010
   sta $0F
     ; store alternating bits in $0F, our temporary input variable
-  lda $0F
+
+  lda #$0F
   sta $F0
  
-  lda $00
+  lda #$00
   sta $F1
     ; store address of binary data ($0F) into $F0 and $F1
   
