@@ -29,13 +29,14 @@ reset:
   sta $0F
     ; store the LED bits 
     ; in OF. LED starts on
+  sta PORTA
   
   lda #$01
   sta $F0 
     ; set argument T1 IER enable = true
   jsr set_t1_ier
   
-  lda $FF
+  lda #$FF
   sta $F0
   sta $F1
     ; set the counter value to FFFF for T1
