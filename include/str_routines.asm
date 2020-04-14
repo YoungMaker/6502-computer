@@ -21,8 +21,7 @@ ebt_ascii:
     ; setup loop index
   lda ($F0), y
     ; load the input value at $F0-$F1 into the A register
-    
-  ;lda #%11111010
+
 ebta_loop:
   tax 
   tya
@@ -32,7 +31,7 @@ ebta_loop:
     ; copy value in X to A, move the counter to A
     ; compare counter against 9, quit if equal
     ; transfer X back into A if not.
-  bit #%00000001
+  bit #%10000000
     ; and the accumulator with 01 to see if the last bit is on
   beq cmp_0
     ; if the zero flag is set, put a zero in the ascii string
@@ -47,7 +46,7 @@ cmp_1:
     ; transfer X back into A
   iny 
     ; increase loop counter
-  lsr a
+  asl a
     ; move the bits over by one to the right
     ; so we can test the next bit
   jmp ebta_loop
@@ -61,7 +60,7 @@ cmp_0:
     ; and store at specified index
     ; transfer X back into A
   iny 
-  lsr a
+  asl a
     ; move the bits over by one to the right
     ; so we can test the next bit
   jmp ebta_loop
