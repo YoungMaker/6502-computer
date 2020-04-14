@@ -21,7 +21,7 @@ reset:
   txs
     ; reset the stack to FF 
   
-  lda #%00000001
+  lda #%11100001
   sta DDRA
     ; set the top pin on PORTA to output
 
@@ -42,6 +42,36 @@ reset:
     ; set the counter value to FFFF for T1
   
   jsr set_t1_free
+  
+    jsr setup_lcd 
+    ; setup LCD on PORTA and PORTB
+    
+  lda IER
+  sta TEMP_VAR
+    ; value in $0F, our temporary input variable
+
+  lda #<TEMP_VAR
+  sta $F0
+ 
+  lda #>TEMP_VAR
+  sta $F1
+    ; store address of binary data ($0F) into $F0 and $F1
+  
+  lda #<STR_LOC
+  sta $F2
+  lda #>STR_LOC
+  sta $F3
+    
+  jsr ebt_ascii
+    ; convert binary into ASCII binary string at STR_LOC
+  
+  lda #<STR_LOC
+  sta $F0
+  lda #>STR_LOC
+  sta $F1
+    ; put the STR LOC into the pararmter locations $F0 and $F1
+  jsr lcd_printstr
+    ; print the output string onto the LCD screen
   
   cli
     ; clear interrupt disable bit to enable IRQB response

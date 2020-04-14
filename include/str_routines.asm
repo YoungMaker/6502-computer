@@ -65,7 +65,6 @@ cmp_0:
     ; so we can test the next bit
   jmp ebta_loop
 ebta_quit:
-  iny
   lda #0
   sta ($F2), y
     ; add null terminator to string

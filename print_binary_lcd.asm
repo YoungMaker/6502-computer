@@ -22,7 +22,7 @@ reset:
   jsr setup_lcd 
     ; setup LCD on PORTA and PORTB
     
-  lda #$FE
+  lda #$F4
   sta TEMP_VAR
     ; value in $0F, our temporary input variable
 
