@@ -16,6 +16,11 @@ bthex_ascii:
     ; store original value of A into x
   and %11110000
     ; clip out the top nibble of the value stored in A
+  lsr a
+  lsr a
+  lsr a
+  lsr a
+    ; move top nibble into bottom nibble
   tay
   lda (HEX_TABLE), y
     ; load value starting at hex_table + y value, which is the upper nibble. 

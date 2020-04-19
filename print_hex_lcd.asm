@@ -15,8 +15,6 @@ STR2_LOC = $fe20
   .string "lorem ipsum dol"
   ; begin code
   .org $8000
-  .include "include/lcd_routines.asm"
-  .include "include/str_routines.asm"
   
 reset:
   jsr setup_lcd 
@@ -43,7 +41,8 @@ reset:
 loop:
   wai
   
-  
+  .include "include/lcd_routines.asm"
+  .include "include/str_routines.asm"
   .include "include/rom_data.asm"
   ;.org $fffe
   ;.word isr
