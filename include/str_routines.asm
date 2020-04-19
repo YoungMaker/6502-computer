@@ -3,7 +3,7 @@
 ; general string ops
 
 
-HEX_TABLE = $CF
+HEX_TABLE = $CF00
 
 ; Turns 8 bit number into hexidecimal string
 ; Parameters: 8 bit number is stored in A. $F0-$F1 is pointer to empty string area 
@@ -22,8 +22,8 @@ bthex_ascii:
   lsr a
     ; move top nibble into bottom nibble
   tay
-  lda (HEX_TABLE), y
-    ; load value starting at hex_table + y value, which is the upper nibble. 
+  lda HEX_TABLE, y
+    ; load value starting at HEX_TABLE + y value, which is the upper nibble. 
     ; this will look the upper nibble in the hexidecimal lookup table
     ; the correct char is in A now
   ldy #$00
@@ -34,8 +34,8 @@ bthex_ascii:
   and %00001111
     ; clip out the bottom nibble of the value stored in A
   tay
-  lda (HEX_TABLE), y
-    ; load value starting at hex_table + y value, which is the lower nibble. 
+  lda HEX_TABLE, y
+    ; load value starting at HEX_TABLE + y value, which is the lower nibble. 
     ; this will look the lower nibble in the hexidecimal lookup table
     ; the correct char is in A now
   ldy #$01
